@@ -8,9 +8,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@chrisoakman/chessboardjs": "^1.0.0",
     "core-js": "^2.6.5",
+    "socket.io": "^2.2.0",
+    "uws": "^100.0.1",
     "vue": "^2.6.10",
+    "vue-chessboard": "^0.6.5",
     "vue-router": "^3.0.3",
+    "vue-socket.io": "^3.0.7",
     "webpack": "^4.39.1"
   },
   "devDependencies": {

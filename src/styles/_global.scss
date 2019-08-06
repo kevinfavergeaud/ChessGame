@@ -1,0 +1,30 @@
+.frame {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $frame-color;
+  transition: all 1s ease-out;
+}
+
+
+.frame-game
+{
+  background-color: $frame-color-game;
+}
+
+.square-ratio
+{
+  @include ratio(1, 1);
+  overflow: hidden;
+  width: 100%;
+  .content
+  {
+    width: 100%;
+  }
+  img,figure
+  {
+    @extend .content;
+  }
+}

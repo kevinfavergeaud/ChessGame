@@ -15,12 +15,12 @@ export default new Router({
     },
     {
       path: "/about",
-      name: "About",
+      name: "about",
       component: () => import("./views/About.vue")
     },
     {
-      path: "/game",
-      name: "GameA",
+      path: "/game/:id?",
+      name: "game",
       component: () => import("./views/Game.vue")
     }
   ]

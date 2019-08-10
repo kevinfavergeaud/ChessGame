@@ -1,10 +1,6 @@
 import Vue from "vue";
-import VueSocketIO from "vue-socket.io";
-
 import App from "./App.vue";
 import router from "./router";
-
-Vue.use(new VueSocketIO({ debug: true, connection: "http://localhost:3000" }));
 
 Vue.config.productionTip = false;
 

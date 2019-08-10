@@ -28,3 +28,73 @@
     @extend .content;
   }
 }
+
+.play-form
+{
+  label
+  {
+    font-size: 1.3em;
+    color: #fff;
+  }
+  .form-control
+  {
+    padding: 10px 15px;
+    font-size: 1.5em;
+    box-shadow: none !important;
+    border-radius: 5px !important;
+  }
+  .btn-play
+  {
+    background: rgb(66, 184, 221);
+    color: #fff;
+    font-weight: 600;
+    margin-left: 15px;
+  }
+
+}
+
+.play-form-colors
+{
+  text-align: center;
+  label
+  {
+    font-size: 1.3em;
+    color: #fff;
+  }
+  .colors
+  {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .chess-black
+    {
+      height: 40px;
+      width: 40px;
+      background-color: #000;
+      margin: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      border-radius: 5px;
+      &:hover
+      {
+        background-color: lighten(#000,7);
+        box-shadow: 0 0 5px rgba(#000,0.9);
+      }
+    }
+    .chess-white
+    {
+      height: 40px;
+      width: 40px;
+      background-color: #fff;
+      margin: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      border-radius: 5px;
+      &:hover
+      {
+        background-color: darken(#fff,10);
+        box-shadow: 0 0 5px rgba(#fff,0.9);
+      }
+    }
+  }
+}

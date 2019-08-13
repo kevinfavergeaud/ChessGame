@@ -1,127 +1,30 @@
 <template>
   <div class="square-ratio w-100">
     <div class="chess blue merida content">
-      <div id="chess"></div>
+      <div ref="chess"></div>
     </div>
   </div>
 </template>
 
 <script>
-var Chessground = require("chessground").Chessground;
-var Chess = require("chess.js");
+import Chess from "chess.js";
+import { Chessground } from "chessground";
 
 export default {
-  props: ["fen", "orientation", "turn", "isViewer", "coords"],
   name: "chessboard",
+  props: [
+    "fen",
+    "orientation",
+    "turn",
+    "isViewer",
+    "coords",
+    "showThreats",
+    "onPromotion"
+  ],
   data() {
     return {
-      board: false,
-      config: {},
-      game: null
+      free: false
     };
-  },
-  methods: {
-    getConfig() {
-      this.config = {
-        addPieceZIndex: true,
-        fen: this.fen,
-        orientation: this.orientation,
-        turnColor: this.turn,
-        resizable: true,
-        disableContextMenu: true,
-        viewOnly: this.isViewer,
-        coordinates: this.coords,
-        movable: {
-          free: false,
-          showDests: true,
-          color: this.orientation
-        },
-        animation: {
-          enabled: true,
-          duration: 150
-        },
-        draggable: {
-          enabled: true,
-          distance: 15,
-          centerPiece: true
-        },
-        drawable: {
-          enabled: true,
-          visible: true,
-          eraseOnClick: true,
-          shapes: [],
-          autoShapes: [],
-          brushes: {
-            green: { key: "g", color: "#15781B", opacity: 1, lineWidth: 10 },
-            red: { key: "r", color: "#882020", opacity: 1, lineWidth: 10 },
-            blue: { key: "b", color: "#003088", opacity: 1, lineWidth: 10 },
-            yellow: { key: "y", color: "#e68f00", opacity: 1, lineWidth: 10 },
-            paleBlue: {
-              key: "pb",
-              color: "#003088",
-              opacity: 0.4,
-              lineWidth: 15
-            },
-            paleGreen: {
-              key: "pg",
-              color: "#15781B",
-              opacity: 0.4,
-              lineWidth: 15
-            },
-            paleRed: {
-              key: "pr",
-              color: "#882020",
-              opacity: 0.4,
-              lineWidth: 15
-            },
-            paleGrey: {
-              key: "pgr",
-              color: "#4a4a4a",
-              opacity: 0.35,
-              lineWidth: 15
-            }
-          },
-          pieces: {
-            baseUrl: "/img/chesspieces/"
-          }
-        },
-        events: {
-          change: data => {
-            this.event(data);
-          },
-          move: data => {
-            this.event(data);
-          },
-          select: data => {
-            this.event(data);
-          },
-          insert: data => {
-            this.event(data);
-          },
-          dropNewPiece: data => {
-            this.event(data);
-          }
-        }
-      };
-    },
-    build() {
-      this.board = Chessground(document.getElementById("chess"), this.config);
-    },
-    loadPosition() {
-      this.game.load(this.fen);
-      this.config.turnColor = "";
-      this.config.movable.dests = this.possibleMoves();
-      this.build();
-    },
-    possibleMoves() {
-      const dests = {};
-      this.game.SQUARES.forEach(s => {
-        const ms = this.game.moves({ square: s, verbose: true });
-        if (ms.length) dests[s] = ms.map(m => m.to);
-      });
-      return dests;
-    },
-    event() {}
   },
   watch: {
     fen: function(newFen) {
@@ -131,15 +34,169 @@ export default {
     orientation: function(orientation) {
       this.orientation = orientation;
       this.loadPosition();
+    },
+    showThreats: function(st) {
+      this.showThreats = st;
+      if (this.showThreats) {
+        this.paintThreats();
+      }
     }
   },
-  created() {
-    this.game = new Chess();
-    this.getConfig();
-    this.build();
+  methods: {
+    possibleMoves() {
+      const dests = {};
+      this.game.SQUARES.forEach(s => {
+        const ms = this.game.moves({ square: s, verbose: true });
+        if (ms.length) dests[s] = ms.map(m => m.to);
+      });
+      return dests;
+    },
+    opponentMoves() {
+      let originalPGN = this.game.pgn();
+      let tokens = this.game.fen().split(" ");
+      tokens[1] = tokens[1] === "w" ? "b" : "w";
+      tokens = tokens.join(" ");
+      let valid = this.game.load(tokens);
+      if (valid) {
+        let moves = this.game.moves({ verbose: true });
+        this.game.load_pgn(originalPGN);
+        return moves;
+      } else {
+        return [];
+      }
+    },
+    toColor() {
+      return this.game.turn() === "w" ? "white" : "black";
+    },
+    paintThreats() {
+      let moves = this.game.moves({ verbose: true });
+      let threats = [];
+      moves.forEach(function(move) {
+        threats.push({ orig: move.to, brush: "yellow" });
+
+        if (move["captured"]) {
+          threats.push({ orig: move.from, dest: move.to, brush: "red" });
+        }
+        if (move["san"].includes("+")) {
+          threats.push({ orig: move.from, dest: move.to, brush: "blue" });
+        }
+      });
+      this.board.setShapes(threats);
+    },
+    calculatePromotions() {
+      let moves = this.game.moves({ verbose: true });
+      this.promotions = [];
+      for (let move of moves) {
+        if (move.promotion) {
+          this.promotions.push(move);
+        }
+      }
+    },
+    isPromotion(orig, dest) {
+      let filteredPromotions = this.promotions.filter(
+        move => move.from === orig && move.to === dest
+      );
+      return filteredPromotions.length > 0; // The current movement is a promotion
+    },
+    changeTurn() {
+      return (orig, dest) => {
+        if (this.isPromotion(orig, dest)) {
+          this.promoteTo = this.onPromotion();
+        }
+        this.game.move({ from: orig, to: dest, promotion: this.promoteTo }); // promote to queen for simplicity
+        this.board.set({
+          fen: this.game.fen(),
+          turnColor: this.toColor(),
+          movable: {
+            color: this.orientation == this.toColor() ? this.orientation : null,
+            dests: this.possibleMoves()
+          }
+        });
+        this.checkGameStatus();
+        this.calculatePromotions();
+        this.afterMove();
+      };
+    },
+    checkGameStatus() {
+      if (this.game.game_over()) {
+        this.$emit("onMove", { fen: this.game.fen() });
+      }
+    },
+    afterMove() {
+      if (!this.game.game_over()) {
+        if (this.showThreats) {
+          this.paintThreats();
+        }
+        let threats = this.countThreats(this.toColor());
+        threats["fen"] = this.game.fen();
+        threats["history"] = this.game.history();
+        this.$emit("onMove", threats);
+      }
+    },
+    countThreats(color) {
+      let threats = {};
+      let captures = 0;
+      let checks = 0;
+      let moves = this.game.moves({ verbose: true });
+      if (color !== this.toColor()) {
+        moves = this.opponentMoves();
+      }
+
+      if (moves.length === 0) {
+        return null; // It´s an invalid position
+      }
+
+      moves.forEach(function(move) {
+        if (move["captured"]) {
+          captures++;
+        }
+        if (move["san"].includes("+")) {
+          checks++;
+        }
+      });
+
+      threats[`legal_${color}`] = this.uniques(
+        moves.map(x => x.from + x.to)
+      ).length; // promotions count as 4 moves. This remove those duplicates moves.
+      threats[`checks_${color}`] = checks;
+      threats[`threat_${color}`] = captures;
+      threats[`turn`] = color;
+      return threats;
+    },
+    uniques(arr) {
+      let uniqueArray = arr.filter(function(elem, index, self) {
+        return index === self.indexOf(elem);
+      });
+      return uniqueArray;
+    },
+    loadPosition() {
+      // set a default value for the configuration object itself to allow call to loadPosition()
+      this.game.load(this.fen);
+      this.board = Chessground(this.$refs.chess, {
+        fen: this.game.fen(),
+        turnColor: this.toColor(),
+        resizable: true,
+        movable: {
+          color: this.orientation == this.toColor() ? this.orientation : null,
+          free: this.free,
+          dests: this.possibleMoves()
+        },
+        orientation: this.orientation
+      });
+      this.board.set({
+        movable: { events: { after: this.changeTurn() } }
+      });
+      this.afterMove();
+    }
   },
   mounted() {
     this.loadPosition();
+  },
+  created() {
+    this.game = new Chess();
+    this.board = null;
+    this.promotions = [];
+    this.promoteTo = "q";
   }
 };
 </script>

@@ -78,7 +78,7 @@
         <chessboard
           :fen="party.fen"
           :orientation="client.orientation"
-          :turn="'white'"
+          :turn="party.turn"
           :coords="false"
           :isViewer="false"
           @onMove="move"
@@ -89,12 +89,18 @@
         <span><i class="fas fa-user mr-2"></i>{{ client.name }}</span>
       </div>
     </div>
+
+    <canvas ref="confetti" class="confetti-canvas"></canvas>
+
+    <event :type="party.status" :winner="party.winner" :client="client"></event>
   </div>
 </template>
 
 <script>
 import chessboard from "../components/Chessboard";
+import event from "../components/Event";
 import io from "socket.io-client";
+import confetti from "canvas-confetti";
 
 // eslint-disable-next-line
 var socket = io("http://localhost:3000");
@@ -103,12 +109,12 @@ export default {
   data() {
     return {
       socket: false,
-      step: "play",
+      step: "username",
       client: {
-        orientation: "black",
-        opponent: "white",
-        name: "kevin",
-        id: "player-xyz"
+        orientation: null,
+        opponent: null,
+        name: null,
+        id: null
       },
       users: {
         black: {
@@ -133,24 +139,40 @@ export default {
         url: null,
         viewers: 0,
         players: 0,
-        fen: null
+        turn: "white",
+        fen: "rnbqkbnr/1pppp1pp/8/8/p1B1P3/5Q2/PPPP1PPP/RNB1K1NR b KQkq -",
+        status: false,
+        ended: false,
+        winner: false
       }
     };
   },
   components: {
-    chessboard: chessboard
+    chessboard: chessboard,
+    event: event
   },
   methods: {
     setStep() {
+      if (this.party.players >= 2) {
+        // for viewers
+        this.step = "play";
+        this.socketGameMovements();
+        return;
+      }
       if (!this.client.name) {
         this.step = "username";
         return;
       }
-      if (this.party.players >= 2) {
-        this.step = "play";
-        return;
-      }
       if (!this.client.orientation) {
+        if (this.users.white.connected === true) {
+          this.setOrientation("black");
+          return;
+        }
+        if (this.users.black.connected === true) {
+          this.setOrientation("white");
+          return;
+        }
+
         this.step = "orientation";
         return;
       }
@@ -174,11 +196,8 @@ export default {
       this.starGame();
     },
     starGame() {
-      this.party.fen =
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1";
       socket.emit("start", { client: this.client });
       this.step = "play";
-      // listen socket for chess moves
       this.socketGameMovements();
     },
     checkParty() {
@@ -199,11 +218,13 @@ export default {
       }
     },
     createClientId() {
-      this.client.id = this.generateUUID("player-xxxxxx");
+      this.client.id = this.generateUUID("player-xxxxxxxxx");
     },
     move(data) {
-      this.party.fen = data.fen;
-      socket.emit("move", data.fen);
+      if (this.party.fen !== data.fen) {
+        this.party.fen = data.fen;
+        socket.emit("move", data.fen);
+      }
     },
     generateUUID(mold = "xxxx-xxxx-xxxx") {
       var d = Math.random();
@@ -216,18 +237,24 @@ export default {
     eval(string) {
       return eval(string);
     },
+    toColor() {
+      return this.party.turn === "w" ? "white" : "black";
+    },
     socketGameInfo() {
       socket.on("gameInfos", infos => {
-        if (infos.players !== undefined) {
+        if (infos !== null && infos.players !== undefined) {
           this.users = infos.players;
           let players = 0;
-          if (this.users.white.connected == true) {
+          if (this.users.white.connected === true) {
             players++;
           }
-          if (this.users.black.connected == true) {
+          if (this.users.black.connected === true) {
             players++;
           }
           this.party.players = players;
+        }
+        if (infos !== null && infos.fen) {
+          this.party.fen = infos.fen;
         }
       });
     },
@@ -235,14 +262,51 @@ export default {
       socket.on("moved", fen => {
         this.party.fen = fen;
       });
+    },
+    socketEvents() {
+      socket.on("event", data => {
+        if (data.type === "checkmate") {
+            console.log('checkmate');
+          this.party.status = "checkmate";
+          this.party.ended = true;
+          this.party.winner = data.winner;
+
+          if (data.winner === this.client.orientation) {
+            let canvas = this.$refs.confetti;
+            canvas.confetti =
+              canvas.confetti ||
+              confetti.create(canvas, {
+                resize: true
+              });
+
+            let confetti_end = Date.now() + 3000 * 1000;
+            let interval = setInterval(function() {
+              if (Date.now() > confetti_end) {
+                return clearInterval(interval);
+              }
+              canvas.confetti({
+                startVelocity: 30,
+                spread: 360,
+                ticks: 60,
+                shapes: ["square"],
+                origin: {
+                  x: Math.random(),
+                  // since they fall down, start a bit higher than random
+                  y: Math.random() - 0.2
+                }
+              });
+            }, 200);
+          }
+        }
+      });
     }
   },
-
   mounted() {
-    this.checkParty();
-    this.createClientId();
-    this.setStep();
-    this.socketGameInfo();
+    this.checkParty(); // Check if party exist if not create one
+    this.createClientId(); // create unique player id
+    this.setStep(); // get current step (username, orientation or play)
+    this.socketGameInfo(); // Listen for game Infos (new player, load fen..)
+    this.socketEvents(); // Listen for game events (chessmate, slate...)
   },
   beforeCreate() {
     document.getElementById("app").classList.add("frame-game");
@@ -289,5 +353,15 @@ export default {
       padding-top: 15px;
     }
   }
+}
+.confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
 }
 </style>

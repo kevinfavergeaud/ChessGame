@@ -1,5 +1,5 @@
 <template>
-  <div class="event-screens">
+  <div class="event-screens" v-if="type">
     <canvas ref="confetti" class="confetti-canvas"></canvas>
     <div
       class="win-screen animated jackInTheBox"

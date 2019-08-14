@@ -171,7 +171,14 @@ export default {
     },
     loadPosition() {
       // set a default value for the configuration object itself to allow call to loadPosition()
-      this.game.load(this.fen);
+      if (this.fen) {
+        // if defined
+        this.game.load(this.fen);
+      } else {
+        // else .. start new game
+        this.game.reset();
+      }
+
       this.board = Chessground(this.$refs.chess, {
         fen: this.game.fen(),
         turnColor: this.toColor(),

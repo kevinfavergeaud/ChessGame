@@ -1,5 +1,5 @@
 <template>
-  <div class="event-screens" v-if="type">
+  <div class="event-screens">
     <canvas ref="confetti" class="confetti-canvas"></canvas>
     <div
       class="win-screen animated jackInTheBox"
@@ -30,6 +30,41 @@
         <h3>You loose this game...</h3>
       </div>
     </div>
+
+
+
+    <div
+      class="draw-screen-back animated fadeInDown"
+      v-if="type === 'draw'"
+    ></div>
+
+    <div class="draw-screen animated fadeInDown" v-if="type === 'draw'">
+      <div class="icon">
+        <img src="/img/draw.svg" />
+      </div>
+      <div class="screen-content">
+        <h1>Draw !</h1>
+        <h3>No winner for this game...</h3>
+      </div>
+    </div>
+
+    <div
+      class="draw-screen-back animated fadeInDown"
+      v-if="type === 'stalemate'"
+    ></div>
+
+    <div class="draw-screen animated fadeInDown" v-if="type === 'stalemate'">
+      <div class="icon">
+        <img src="/img/slatemate.svg" />
+      </div>
+      <div class="screen-content">
+        <h1>Stalemate !</h1>
+        <h3>No winner for this game...</h3>
+      </div>
+    </div>
+
+
+
   </div>
 </template>
 
@@ -44,6 +79,7 @@ export default {
         // If checkmate
         if (this.winner === this.client.orientation) {
           // If winner
+
           let canvas = this.$refs.confetti;
           canvas.confetti =
             canvas.confetti ||
@@ -86,6 +122,7 @@ $screen-height: 250px;
   align-items: center;
   justify-content: center;
   z-index: 9000;
+  pointer-events: none;
 
   .win-screen {
     width: 500px;
@@ -149,6 +186,20 @@ $screen-height: 250px;
       }
     }
   }
+  .draw-screen {
+    @extend .win-screen;
+    .icon {
+      img {
+        width: 155px;
+      }
+    }
+  }
+}
+.draw-screen-back {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  background-color: rgba(#233138, 0.7);
 }
 .confetti-canvas {
   position: fixed;

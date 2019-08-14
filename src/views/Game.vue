@@ -106,6 +106,7 @@ export default {
   data() {
     return {
       socket: false,
+      sync: false,
       step: "username",
       client: {
         orientation: null,
@@ -138,6 +139,7 @@ export default {
         players: 0,
         turn: "white",
         fen: false,
+        customFen: false,
         status: false,
         ended: false,
         winner: false
@@ -218,6 +220,9 @@ export default {
       this.client.id = this.generateUUID("player-xxxxxxxxx");
     },
     move(data) {
+        let audio = ['/audio/', '/audio/'];
+
+        this.playSound(audio[Math.floor(Math.random() * audio.length)]);
       if (this.party.fen !== data.fen) {
         this.party.fen = data.fen;
         socket.emit("move", data.fen);
@@ -252,6 +257,10 @@ export default {
         }
         if (infos !== null && infos.fen) {
           this.party.fen = infos.fen;
+        } else {
+          if (this.party.customFen && this.party.customFen !== this.party.fen) {
+            this.move({fen:this.party.customFen});
+          }
         }
       });
     },
@@ -267,7 +276,23 @@ export default {
           this.party.ended = true;
           this.party.winner = data.winner;
         }
+        if(data.type === "draw") {
+          this.party.status = "draw";
+          this.party.ended = true;
+          this.party.winner = false;
+        }
+        if(data.type === "stalemate") {
+          this.party.status = "stalemate";
+          this.party.ended = true;
+          this.party.winner = false;
+        }
       });
+    },
+    playSound (sound) {
+      if(sound) {
+        var audio = new Audio(sound);
+        audio.play();
+      }
     }
   },
   mounted() {
@@ -275,7 +300,7 @@ export default {
     this.createClientId(); // create unique player id
     this.setStep(); // get current step (username, orientation or play)
     this.socketGameInfo(); // Listen for game Infos (new player, load fen..)
-    this.socketEvents(); // Listen for game events (chessmate, slate...)
+    this.socketEvents(); // Listen for game events (chessmate, slate, draw)
   },
   beforeCreate() {
     document.getElementById("app").classList.add("frame-game");

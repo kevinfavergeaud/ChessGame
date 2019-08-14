@@ -90,8 +90,6 @@
       </div>
     </div>
 
-    <canvas ref="confetti" class="confetti-canvas"></canvas>
-
     <event :type="party.status" :winner="party.winner" :client="client"></event>
   </div>
 </template>
@@ -100,7 +98,6 @@
 import chessboard from "../components/Chessboard";
 import event from "../components/Event";
 import io from "socket.io-client";
-import confetti from "canvas-confetti";
 
 // eslint-disable-next-line
 var socket = io("http://localhost:3000");
@@ -140,7 +137,7 @@ export default {
         viewers: 0,
         players: 0,
         turn: "white",
-        fen: "rnbqkbnr/1pppp1pp/8/8/p1B1P3/5Q2/PPPP1PPP/RNB1K1NR b KQkq -",
+        fen: false,
         status: false,
         ended: false,
         winner: false
@@ -266,37 +263,9 @@ export default {
     socketEvents() {
       socket.on("event", data => {
         if (data.type === "checkmate") {
-            console.log('checkmate');
           this.party.status = "checkmate";
           this.party.ended = true;
           this.party.winner = data.winner;
-
-          if (data.winner === this.client.orientation) {
-            let canvas = this.$refs.confetti;
-            canvas.confetti =
-              canvas.confetti ||
-              confetti.create(canvas, {
-                resize: true
-              });
-
-            let confetti_end = Date.now() + 3000 * 1000;
-            let interval = setInterval(function() {
-              if (Date.now() > confetti_end) {
-                return clearInterval(interval);
-              }
-              canvas.confetti({
-                startVelocity: 30,
-                spread: 360,
-                ticks: 60,
-                shapes: ["square"],
-                origin: {
-                  x: Math.random(),
-                  // since they fall down, start a bit higher than random
-                  y: Math.random() - 0.2
-                }
-              });
-            }, 200);
-          }
         }
       });
     }
@@ -353,15 +322,5 @@ export default {
       padding-top: 15px;
     }
   }
-}
-.confetti-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
 }
 </style>

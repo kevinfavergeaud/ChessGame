@@ -1,5 +1,6 @@
 <template>
   <div class="event-screens">
+    <canvas ref="confetti" class="confetti-canvas"></canvas>
     <div
       class="win-screen animated jackInTheBox"
       v-if="type === 'checkmate' && winner === client.orientation"
@@ -13,8 +14,14 @@
       </div>
     </div>
 
-    <div class="loose-screen-back animated fadeInDown" v-if="type === 'checkmate' && winner !== client.orientation"></div>
-    <div class="loose-screen animated fadeInDown" v-if="type === 'checkmate' && winner !== client.orientation">
+    <div
+      class="loose-screen-back animated fadeInDown"
+      v-if="type === 'checkmate' && winner !== client.orientation"
+    ></div>
+    <div
+      class="loose-screen animated fadeInDown"
+      v-if="type === 'checkmate' && winner !== client.orientation"
+    >
       <div class="icon">
         <img src="/img/loose.svg" />
       </div>
@@ -27,8 +34,43 @@
 </template>
 
 <script>
+import confetti from "canvas-confetti";
+
 export default {
-  props: ["type", "winner", "client"]
+  props: ["type", "winner", "client"],
+  watch: {
+    type(val) {
+      if (val === "checkmate") {
+        // If checkmate
+        if (this.winner === this.client.orientation) {
+          // If winner
+          let canvas = this.$refs.confetti;
+          canvas.confetti =
+            canvas.confetti ||
+            confetti.create(canvas, {
+              resize: true
+            });
+
+          let confetti_end = Date.now() + 3000 * 1000;
+          let interval = setInterval(function() {
+            if (Date.now() > confetti_end) {
+              return clearInterval(interval);
+            }
+            canvas.confetti({
+              startVelocity: 30,
+              spread: 360,
+              ticks: 60,
+              shapes: ["square"],
+              origin: {
+                x: Math.random(),
+                y: Math.random() - 0.2
+              }
+            });
+          }, 200);
+        }
+      }
+    }
+  }
 };
 </script>
 
@@ -44,7 +86,7 @@ $screen-height: 250px;
   align-items: center;
   justify-content: center;
   z-index: 9000;
-  pointer-events: none;
+
   .win-screen {
     width: 500px;
     height: $screen-height;
@@ -93,12 +135,11 @@ $screen-height: 250px;
       }
     }
   }
-  .loose-screen-back
-  {
+  .loose-screen-back {
     height: 100vh;
     width: 100vw;
     position: absolute;
-    background-color: rgba(#e74c3c,0.3);
+    background-color: rgba(#e74c3c, 0.3);
   }
   .loose-screen {
     @extend .win-screen;
@@ -108,5 +149,15 @@ $screen-height: 250px;
       }
     }
   }
+}
+.confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
 }
 </style>

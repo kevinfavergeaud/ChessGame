@@ -31,8 +31,6 @@
       </div>
     </div>
 
-
-
     <div
       class="draw-screen-back animated fadeInDown"
       v-if="type === 'draw'"
@@ -62,9 +60,6 @@
         <h3>No winner for this game...</h3>
       </div>
     </div>
-
-
-
   </div>
 </template>
 
@@ -87,7 +82,7 @@ export default {
               resize: true
             });
 
-          let confetti_end = Date.now() + 3000 * 1000;
+          let confetti_end = Date.now() + 36 * 1000;
           let interval = setInterval(function() {
             if (Date.now() > confetti_end) {
               return clearInterval(interval);

@@ -19,7 +19,8 @@ export default {
     "isViewer",
     "coords",
     "showThreats",
-    "onPromotion"
+    "onPromotion",
+    "onDrag"
   ],
   data() {
     return {
@@ -27,9 +28,12 @@ export default {
     };
   },
   watch: {
-    fen: function(newFen) {
+    fen: function(newFen, oldFen) {
       this.fen = newFen;
       this.loadPosition();
+      if (newFen !== oldFen && oldFen !== false) {
+        this.$emit("onDrag", { player: this.toColor() });
+      }
     },
     orientation: function(orientation) {
       this.orientation = orientation;

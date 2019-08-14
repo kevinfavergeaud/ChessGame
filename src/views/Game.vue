@@ -1,5 +1,7 @@
 <template>
   <div class="gui w-100">
+    <background></background>
+    <game-audio></game-audio>
     <div class="config" v-if="step != 'play'">
       <div class="row w-100 justify-content-center">
         <div class="col-xl-5 col-lg-6 col-md-6 col-12">
@@ -82,6 +84,7 @@
           :coords="false"
           :isViewer="false"
           @onMove="move"
+          @onDrag="drag"
         />
       </div>
 
@@ -97,6 +100,8 @@
 <script>
 import chessboard from "../components/Chessboard";
 import event from "../components/Event";
+import background from "../components/Background";
+import audio from "../components/Audio";
 import io from "socket.io-client";
 
 // eslint-disable-next-line
@@ -139,16 +144,31 @@ export default {
         players: 0,
         turn: "white",
         fen: false,
-        customFen: false,
+        customFen:
+          "rnbqkbnr/pppppppp/8/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1",
         status: false,
         ended: false,
         winner: false
+      },
+      sounds: {
+        opmove: ["/audio/opmove1.mp3", "/audio/opmove2.mp3"],
+        slatemate: ["/audio/slatemate.mp3", "/audio/slatemate2.mp3"],
+        move: [
+          "/audio/move1.mp3",
+          "/audio/move2.mp3",
+          "/audio/move3.mp3",
+          "/audio/move4.mp3",
+          "/audio/move5.mp3"
+        ],
+        win: ["/audio/win1.mp3"]
       }
     };
   },
   components: {
     chessboard: chessboard,
-    event: event
+    event: event,
+    background: background,
+    gameAudio: audio
   },
   methods: {
     setStep() {
@@ -220,12 +240,17 @@ export default {
       this.client.id = this.generateUUID("player-xxxxxxxxx");
     },
     move(data) {
-        let audio = ['/audio/', '/audio/'];
-
-        this.playSound(audio[Math.floor(Math.random() * audio.length)]);
       if (this.party.fen !== data.fen) {
         this.party.fen = data.fen;
         socket.emit("move", data.fen);
+      }
+    },
+    drag(data) {
+      if (data.player === this.client.orientation) {
+        // for player sounds
+        this.playSound(this.sounds.move);
+      } else {
+        this.playSound(this.sounds.opmove); // for user sounds
       }
     },
     generateUUID(mold = "xxxx-xxxx-xxxx") {
@@ -259,7 +284,7 @@ export default {
           this.party.fen = infos.fen;
         } else {
           if (this.party.customFen && this.party.customFen !== this.party.fen) {
-            this.move({fen:this.party.customFen});
+            this.move({ fen: this.party.customFen });
           }
         }
       });
@@ -272,26 +297,47 @@ export default {
     socketEvents() {
       socket.on("event", data => {
         if (data.type === "checkmate") {
+          if (
+            data.winner === this.client.orientation &&
+            this.party.ended === false
+          ) {
+            this.playSound(this.sounds.win);
+          }
           this.party.status = "checkmate";
           this.party.ended = true;
           this.party.winner = data.winner;
         }
-        if(data.type === "draw") {
+        if (data.type === "draw") {
+          if (this.party.ended === false) {
+            this.playSound(this.sounds.slatemate);
+          }
           this.party.status = "draw";
           this.party.ended = true;
           this.party.winner = false;
         }
-        if(data.type === "stalemate") {
+        if (data.type === "stalemate") {
+          if (this.party.ended === false) {
+            this.playSound(this.sounds.slatemate);
+          }
           this.party.status = "stalemate";
           this.party.ended = true;
           this.party.winner = false;
         }
       });
     },
-    playSound (sound) {
-      if(sound) {
-        var audio = new Audio(sound);
-        audio.play();
+    playSound(sound) {
+      let path = sound[Math.floor(Math.random() * sound.length)];
+      new Audio(path).play();
+    },
+    loadSounds() {
+      let sound;
+      let file;
+
+      for (sound in this.sounds) {
+        for (file in this.sounds[sound]) {
+          // load file
+          new Audio(this.sounds[sound][file]).load();
+        }
       }
     }
   },
@@ -301,6 +347,8 @@ export default {
     this.setStep(); // get current step (username, orientation or play)
     this.socketGameInfo(); // Listen for game Infos (new player, load fen..)
     this.socketEvents(); // Listen for game events (chessmate, slate, draw)
+    this.socketEvents(); // Listen for game events (chessmate, slate, draw)
+    this.loadSounds(); // Load All sound fx
   },
   beforeCreate() {
     document.getElementById("app").classList.add("frame-game");
@@ -334,6 +382,7 @@ export default {
     display: flex;
     justify-content: center;
     color: #fff;
+    z-index: 9000;
     span {
       color: #fff;
       font-weight: 600;

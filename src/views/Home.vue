@@ -3,12 +3,12 @@
     <div class="home-buttons animated zoomIn">
       <router-link to="/game" href="#" class="btn btn-outline-light">
         <i class="fas fa-robot"></i>
-        <span>Jouer contre un robot</span>
+        <span>Play against a robot</span>
       </router-link>
       <router-link to="/game" class="btn btn-outline-light">
         <i class="fas fa-chess"></i>
-        <span>Créer une partie</span>
-        <small>Jouez contre vos amis</small>
+        <span>Create online game</span>
+        <small>Play against your friends</small>
       </router-link>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="event-screens">
+  <div class="event-screens" :style="type ? '' : 'pointer-events: none'">
     <canvas ref="confetti" class="confetti-canvas"></canvas>
     <div
       class="win-screen animated jackInTheBox"
@@ -11,6 +11,9 @@
       <div class="screen-content">
         <h1>Checkmate !</h1>
         <h3>You win this game !</h3>
+        <router-link to="/" class="btn btn-outline-light mt-2"
+          >Back to main menue</router-link
+        >
       </div>
     </div>
 
@@ -28,6 +31,9 @@
       <div class="screen-content">
         <h1>Checkmate</h1>
         <h3>You loose this game...</h3>
+        <router-link to="/" class="btn btn-outline-light mt-2"
+          >Back to main menue</router-link
+        >
       </div>
     </div>
 
@@ -43,6 +49,9 @@
       <div class="screen-content">
         <h1>Draw !</h1>
         <h3>No winner for this game...</h3>
+        <router-link to="/" class="btn btn-outline-light mt-2"
+          >Back to main menue</router-link
+        >
       </div>
     </div>
 
@@ -58,6 +67,9 @@
       <div class="screen-content">
         <h1>Stalemate !</h1>
         <h3>No winner for this game...</h3>
+        <router-link to="/" class="btn btn-outline-light mt-2"
+          >Back to main menue</router-link
+        >
       </div>
     </div>
   </div>
@@ -82,7 +94,7 @@ export default {
               resize: true
             });
 
-          let confetti_end = Date.now() + 36 * 1000;
+          let confetti_end = Date.now() + 8 * 1000;
           let interval = setInterval(function() {
             if (Date.now() > confetti_end) {
               return clearInterval(interval);
@@ -117,7 +129,6 @@ $screen-height: 250px;
   align-items: center;
   justify-content: center;
   z-index: 9000;
-  pointer-events: none;
 
   .win-screen {
     width: 500px;

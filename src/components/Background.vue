@@ -18,52 +18,14 @@
 </template>
 
 <script>
+import { backgrounds } from "../settings";
+
 export default {
   props: [],
   data() {
     return {
       viewed: [],
-      images: [
-        {
-          user: "DBott",
-          title: "15/409 - le paysage froid",
-          url:
-            "https://www.deviantart.com/dbott/art/15-409-le-paysage-froid-774212237",
-          path:
-            "/backgrounds/15_409___le_paysage_froid_by_dbott_dcsy1zh-pre.jpg"
-        },
-        {
-          user: "Aura-2",
-          title: "256",
-          url: "https://www.deviantart.com/aura-2/art/256-757346128",
-          path: "/backgrounds/256_by_aura_2_dciwk0g-pre.jpg"
-        },
-        {
-          user: "Aura-2",
-          title: "255",
-          url: "https://www.deviantart.com/aura-2/art/255-757345499",
-          path: "/backgrounds/255_by_aura_2_dciwjiz-pre.jpg"
-        },
-        {
-          user: "mabuli",
-          title: "Mist",
-          url: "https://www.deviantart.com/mabuli/art/Mist-752097368",
-          path: "/backgrounds/mist_by_mabuli_dcfs21k-fullview.jpg"
-        },
-        {
-          user: "merl1ncz",
-          title: "Unnamed landscape",
-          url:
-            "https://www.deviantart.com/merl1ncz/art/Unnamed-landscape-539101410",
-          path: "/backgrounds/unnamed_landscape_by_merl1ncz_d8wytb6-pre.jpg"
-        },
-        {
-          user: "merl1ncz",
-          title: "Mazca",
-          url: "https://www.deviantart.com/merl1ncz/art/Mazca-590691036",
-          path: "/backgrounds/mazca_by_merl1ncz_d9rok4c-pre.jpg"
-        }
-      ],
+      images: backgrounds,
       selected: false,
       showed: true
     };

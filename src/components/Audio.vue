@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import { musics } from "../settings";
+
 export default {
   props: ["onVolume"],
   data() {
@@ -32,19 +34,7 @@ export default {
       volume: 2,
       playing: false,
       path: "/audio/ambiance/",
-      sounds: [
-        "ambiance1.mp3",
-        "ambiance2.mp3",
-        "ambiance3.mp3",
-        "ambiance4.mp3",
-        "ambiance5.mp3",
-        "ambiance6.mp3",
-        "ambiance7.mp3",
-        "ambiance8.mp3",
-        "ambiance9.mp3",
-        "ambiance10.mp3",
-        "ambiance11.mp3"
-      ]
+      sounds: musics
     };
   },
   methods: {

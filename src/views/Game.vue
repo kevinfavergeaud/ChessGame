@@ -101,6 +101,7 @@ import chessboard from "../components/Chessboard";
 import event from "../components/Event";
 import background from "../components/Background";
 import io from "socket.io-client";
+import { sounds } from "../settings";
 
 // eslint-disable-next-line
 var socket = io("http://localhost:3000");
@@ -115,7 +116,8 @@ export default {
         orientation: null,
         opponent: null,
         name: null,
-        id: null
+        id: null,
+        token: null
       },
       users: {
         black: {
@@ -149,18 +151,7 @@ export default {
         winner: false,
         volume: 0.1
       },
-      sounds: {
-        opmove: ["/audio/opmove1.mp3", "/audio/opmove2.mp3"],
-        slatemate: ["/audio/slatemate.mp3", "/audio/slatemate2.mp3"],
-        move: [
-          "/audio/move1.mp3",
-          "/audio/move2.mp3",
-          "/audio/move3.mp3",
-          "/audio/move4.mp3",
-          "/audio/move5.mp3"
-        ],
-        win: ["/audio/win1.mp3"]
-      }
+      sounds: sounds
     };
   },
   components: {
@@ -224,18 +215,45 @@ export default {
         this.$router.push({ name: "game", params: { id: id } });
         this.party.id = this.$route.params.id;
         this.party.url = this.$route.fullPath;
-        socket.emit("gameConnect", { party: this.party.id });
+        socket.emit("gameConnect", {
+          party: this.party.id,
+          client: this.client
+        });
       } else {
         this.party.id = this.$route.params.id;
         this.party.url = this.$route.fullPath;
-        socket.emit("gameConnect", { party: this.party.id }); // send new connection
+        socket.emit("gameConnect", {
+          party: this.party.id,
+          client: this.client
+        }); // send new connection
         socket.on("gameNotFound", () => {
           window.location.href = "/game/"; // redirect to new game...
         });
       }
     },
-    createClientId() {
-      this.client.id = this.generateUUID("player-xxxxxxxxx");
+    getClientId() {
+      if (this.$cookies.isKey("client")) {
+        this.client.id = this.$cookies.get("client")["id"];
+        this.client.token = this.$cookies.get("client")["token"];
+      } else {
+        this.client.id = this.generateUUID("player-xxxxxxxxx");
+        this.client.token = this.generateUUID("xxxxxxxxxxxxxxxxx");
+        this.$cookies.set("client", {
+          id: this.client.id,
+          token: this.client.token
+        });
+      }
+      let self = this;
+      socket.on("reconnect", function(data) {
+        self.client = {
+          orientation: data.client.orientation,
+          opponent: data.client.orientation === "black" ? "white" : "black",
+          name: data.client.name,
+          id: data.client.id,
+          token: data.client.token
+        };
+        self.starGame();
+      });
     },
     move(data) {
       if (this.party.fen !== data.fen) {
@@ -333,7 +351,7 @@ export default {
   },
   mounted() {
     this.checkParty(); // Check if party exist if not create one
-    this.createClientId(); // create unique player id
+    this.getClientId(); // create unique player id
     this.setStep(); // get current step (username, orientation or play)
     this.socketGameInfo(); // Listen for game Infos (new player, load fen..)
     this.socketEvents(); // Listen for game events (chessmate, slate, draw)
@@ -371,6 +389,7 @@ export default {
     justify-content: center;
     color: #fff;
     z-index: 9000;
+    text-shadow: 0 0 2px rgba(#000, 0.7);
     span {
       color: #fff;
       font-weight: 600;

@@ -4,7 +4,8 @@
       <input
         type="range"
         min="0"
-        max="10"
+        max="3"
+        step="0.01"
         v-model="volume"
         class="range"
       />
@@ -23,12 +24,12 @@
 
 <script>
 export default {
-  props: ["ended"],
+  props: ["onVolume"],
   data() {
     return {
       muted: false,
       audio: null,
-      volume: 5,
+      volume: 2,
       playing: false,
       path: "/audio/ambiance/",
       sounds: [
@@ -52,23 +53,37 @@ export default {
       return sound;
     },
     startSound() {
+      this.$emit("onVolume", this.volume / 10);
       this.playing = this.selectSound();
+      this.audio = false;
       this.audio = new Audio(this.path + this.playing);
+      this.audio.volume = this.volume / 10;
       this.audio.play();
+      this.listenOnEnd(); // listen when sound if finish, start new one
     },
     nextSound() {
-        this.playing = this.selectSound();
-        console.log(this.audio);
-        this.audio.pause();
-        this.audio.load();
-        this.audio.play();
+      this.audio.pause();
+      this.startSound();
     },
     muteToggle() {
-      this.muted = !this.muted;
-      if(this.muted) {
-        this.volume = 0;
+      if (this.muted) {
+        this.volume = "2";
       } else {
-        this.volume = 2;
+        this.volume = "0";
+      }
+    },
+    listenOnEnd() {
+      let self = this;
+      this.audio.onended = function() {
+        self.audio.pause();
+        self.startSound();
+      };
+    },
+    getVolume() {
+      if (this.$cookies.isKey("volume")) {
+        this.volume = this.$cookies.get("volume");
+      } else {
+        this.$cookies.set("volume", this.volume);
       }
     }
   },
@@ -76,12 +91,16 @@ export default {
     play(val) {
       this.play = !val;
     },
-    ended(val) {
-      this.play = !val;
+    volume(val) {
+      this.audio.volume = val / 10;
+      this.$emit("onVolume", val / 10);
+      this.$cookies.set("volume", val);
+      this.muted = val == 0;
     }
   },
   mounted() {
-    this.startSound();
+    this.getVolume(); // Pick a sound and start
+    this.startSound(); // Pick a sound and start
   }
 };
 </script>

@@ -1,7 +1,6 @@
 <template>
   <div class="gui w-100">
     <background></background>
-    <game-audio></game-audio>
     <div class="config" v-if="step != 'play'">
       <div class="row w-100 justify-content-center">
         <div class="col-xl-5 col-lg-6 col-md-6 col-12">
@@ -101,7 +100,6 @@
 import chessboard from "../components/Chessboard";
 import event from "../components/Event";
 import background from "../components/Background";
-import audio from "../components/Audio";
 import io from "socket.io-client";
 
 // eslint-disable-next-line
@@ -148,7 +146,8 @@ export default {
           "rnbqkbnr/pppppppp/8/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1",
         status: false,
         ended: false,
-        winner: false
+        winner: false,
+        volume: 0.1
       },
       sounds: {
         opmove: ["/audio/opmove1.mp3", "/audio/opmove2.mp3"],
@@ -167,8 +166,7 @@ export default {
   components: {
     chessboard: chessboard,
     event: event,
-    background: background,
-    gameAudio: audio
+    background: background
   },
   methods: {
     setStep() {
@@ -327,18 +325,10 @@ export default {
     },
     playSound(sound) {
       let path = sound[Math.floor(Math.random() * sound.length)];
-      new Audio(path).play();
-    },
-    loadSounds() {
-      let sound;
-      let file;
+      let audio = new Audio(path);
 
-      for (sound in this.sounds) {
-        for (file in this.sounds[sound]) {
-          // load file
-          new Audio(this.sounds[sound][file]).load();
-        }
-      }
+      audio.volume = this.$cookies.get("volume") / 10;
+      audio.play();
     }
   },
   mounted() {
@@ -347,8 +337,6 @@ export default {
     this.setStep(); // get current step (username, orientation or play)
     this.socketGameInfo(); // Listen for game Infos (new player, load fen..)
     this.socketEvents(); // Listen for game events (chessmate, slate, draw)
-    this.socketEvents(); // Listen for game events (chessmate, slate, draw)
-    this.loadSounds(); // Load All sound fx
   },
   beforeCreate() {
     document.getElementById("app").classList.add("frame-game");

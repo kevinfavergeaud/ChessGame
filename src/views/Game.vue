@@ -150,7 +150,7 @@ export default {
         status: false,
         ended: false,
         winner: false,
-        volume: 0.1
+        volume: 0.5
       },
       sounds: sounds
     };
@@ -345,8 +345,7 @@ export default {
     playSound(sound) {
       let path = sound[Math.floor(Math.random() * sound.length)];
       let audio = new Audio(path);
-
-      audio.volume = this.$cookies.get("volume") / 10;
+      audio.volume = 0.5;
       audio.play();
     }
   },

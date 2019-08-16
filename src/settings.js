@@ -1,5 +1,5 @@
 export const settings = {
-  domain: 'localhost:8080',
+  domain: "localhost:8080",
   defaultVolume: 0.1
 };
 export const sounds = {

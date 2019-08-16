@@ -145,8 +145,7 @@ export default {
         players: 0,
         turn: "white",
         fen: false,
-        customFen:
-          "rnbqkbnr/pppppppp/8/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1",
+        customFen: false,
         status: false,
         ended: false,
         winner: false,
@@ -210,14 +209,15 @@ export default {
       this.socketGameMovements();
     },
     checkParty() {
-      if (!this.$route.params.id) {
+      if (!this.$route.params.id || this.$route.params.id === "create") {
         let id = this.generateUUID();
         socket.emit("gameCreate", { party: id });
-        this.$router.push({ name: "game", params: { id: id } });
+        this.$router.push({ name: "game", params: { id: id, robot: this.$route.params.robot} });
         this.party.id = this.$route.params.id;
         this.party.url = this.$route.fullPath;
         socket.emit("gameConnect", {
           party: this.party.id,
+          bot: this.$route.params.robot !== undefined,
           client: this.client
         });
       } else {
@@ -228,7 +228,11 @@ export default {
           client: this.client
         }); // send new connection
         socket.on("gameNotFound", () => {
-          window.location.href = "/game/"; // redirect to new game...
+          if (this.$route.params.robot) {
+            window.location.href = "/game/create/bot"; // redirect to new bot game...
+          } else{
+            window.location.href = "/game/"; // redirect to new game...
+          }
         });
       }
     },

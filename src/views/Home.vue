@@ -1,7 +1,7 @@
 <template>
   <div class="frame-center">
     <div class="home-buttons animated zoomIn">
-      <router-link to="/game" href="#" class="btn btn-outline-light">
+      <router-link to="/game/create/bot" class="btn btn-outline-light">
         <i class="fas fa-robot"></i>
         <span>Play against a robot</span>
       </router-link>

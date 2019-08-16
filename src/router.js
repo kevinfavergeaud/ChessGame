@@ -19,7 +19,7 @@ export default new Router({
       component: () => import("./views/About.vue")
     },
     {
-      path: "/game/:id?",
+      path: "/game/:id?/:robot?",
       name: "game",
       component: () => import("./views/Game.vue")
     }

@@ -1,8 +1,8 @@
 <template>
   <div class="event-screens" :style="type ? '' : 'pointer-events: none'">
     <div
-        class="win-screen-back animated fadeInDown"
-        v-if="type === 'checkmate' && winner === client.orientation"
+      class="win-screen-back animated fadeInDown"
+      v-if="type === 'checkmate' && winner === client.orientation"
     ></div>
     <canvas ref="confetti" class="confetti-canvas"></canvas>
     <div

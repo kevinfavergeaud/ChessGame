@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { musics } from "../settings";
+import { musics, settings } from "../settings";
 
 export default {
   props: ["onVolume"],
@@ -31,7 +31,7 @@ export default {
     return {
       muted: false,
       audio: null,
-      volume: 2,
+      volume: settings.defaultVolume,
       playing: false,
       path: "/audio/ambiance/",
       sounds: musics

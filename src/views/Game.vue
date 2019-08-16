@@ -54,7 +54,7 @@
             >No opponents for now! You can play with <br />
             your friends by sharing this links :
           </i>
-          <h3>{{ party.url }}</h3>
+          <h3>{{ settings.domain + party.url }}</h3>
         </div>
         <div
           class="loading"
@@ -101,7 +101,7 @@ import chessboard from "../components/Chessboard";
 import event from "../components/Event";
 import background from "../components/Background";
 import io from "socket.io-client";
-import { sounds } from "../settings";
+import { sounds, settings } from "../settings";
 
 // eslint-disable-next-line
 var socket = io("http://localhost:3000");
@@ -112,6 +112,7 @@ export default {
       socket: false,
       sync: false,
       step: "username",
+      settings: settings,
       client: {
         orientation: null,
         opponent: null,

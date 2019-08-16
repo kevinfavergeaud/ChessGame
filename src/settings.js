@@ -1,3 +1,7 @@
+export const settings = {
+  domain: 'localhost:8080',
+  defaultVolume: 0.1
+};
 export const sounds = {
   opmove: ["/audio/opmove1.mp3", "/audio/opmove2.mp3"],
   slatemate: ["/audio/slatemate.mp3", "/audio/slatemate2.mp3"],

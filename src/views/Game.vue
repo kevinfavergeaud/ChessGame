@@ -71,7 +71,12 @@
               eval('this.users.' + client.opponent + '.connected')
           "
           ><i class="fas fa-user mr-2"></i
-          >{{ eval("this.users." + client.opponent + ".name") }} <span v-if="eval('this.users.' + client.opponent + '.disconnected')" class="text-danger"><i class="fas fa-times mr-2"></i> Disconnected</span></span
+          >{{ eval("this.users." + client.opponent + ".name") }}
+          <span
+            v-if="eval('this.users.' + client.opponent + '.disconnected')"
+            class="text-danger"
+            ><i class="fas fa-times mr-2"></i> Disconnected</span
+          ></span
         >
       </div>
 
@@ -212,7 +217,10 @@ export default {
       if (!this.$route.params.id || this.$route.params.id === "create") {
         let id = this.generateUUID();
         socket.emit("gameCreate", { party: id });
-        this.$router.push({ name: "game", params: { id: id, robot: this.$route.params.robot} });
+        this.$router.push({
+          name: "game",
+          params: { id: id, robot: this.$route.params.robot }
+        });
         this.party.id = this.$route.params.id;
         this.party.url = this.$route.fullPath;
         socket.emit("gameConnect", {
@@ -230,7 +238,7 @@ export default {
         socket.on("gameNotFound", () => {
           if (this.$route.params.robot) {
             window.location.href = "/game/create/bot"; // redirect to new bot game...
-          } else{
+          } else {
             window.location.href = "/game/"; // redirect to new game...
           }
         });

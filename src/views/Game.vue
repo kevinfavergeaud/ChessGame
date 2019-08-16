@@ -71,7 +71,7 @@
               eval('this.users.' + client.opponent + '.connected')
           "
           ><i class="fas fa-user mr-2"></i
-          >{{ eval("this.users." + client.opponent + ".name") }}</span
+          >{{ eval("this.users." + client.opponent + ".name") }} <span v-if="eval('this.users.' + client.opponent + '.disconnected')" class="text-danger"><i class="fas fa-times mr-2"></i> Disconnected</span></span
         >
       </div>
 

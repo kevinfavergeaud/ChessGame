@@ -104,7 +104,7 @@ import io from "socket.io-client";
 import { sounds, settings } from "../settings";
 
 // eslint-disable-next-line
-var socket = io("http://localhost:3000");
+var socket = io(settings.socketServer);
 
 export default {
   data() {

@@ -1,6 +1,7 @@
 export const settings = {
-  domain: "localhost:8080",
-  defaultVolume: 0.1
+  domain: "http://superchess.tech",
+  defaultVolume: 0.1,
+  socketServer: "http://51.91.25.120:3000"
 };
 export const sounds = {
   opmove: ["/audio/opmove1.mp3", "/audio/opmove2.mp3"],
